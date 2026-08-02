@@ -185,41 +185,52 @@ fun MoodsScreen(
                         modifier = Modifier.weight(1f).testTag("mood_logged_card"),
                         icon = TablerIcons.Heart,
                         iconTint = Color(0xFFEC4899),
-                        iconBg = Color(0xFFFCE7F3),
+                        iconBg = if (darkTheme) Color(0xFF331826) else Color(0xFFFCE7F3),
                         label = "Logged",
                         value = "$totalLoggedCount",
                         cardBgColor = cardBgColor,
                         cardBorderColor = cardBorderColor,
                         titleTextColor = titleTextColor,
-                        subtextColor = subtextColor
+                        subtextColor = subtextColor,
+                        onClick = { viewModel.selectMoodFilter("All") }
                     )
                     MoodStatCard(
                         modifier = Modifier.weight(1f).testTag("mood_14d_card"),
                         icon = TablerIcons.Calendar,
                         iconTint = Color(0xFF8B5CF6),
-                        iconBg = Color(0xFFEDE9FE),
+                        iconBg = if (darkTheme) Color(0xFF2E1F49) else Color(0xFFEDE9FE),
                         label = "Last 14d",
                         value = "$last14DaysCount",
                         cardBgColor = cardBgColor,
                         cardBorderColor = cardBorderColor,
                         titleTextColor = titleTextColor,
-                        subtextColor = subtextColor
+                        subtextColor = subtextColor,
+                        onClick = { viewModel.selectMoodFilter("All") }
                     )
                     
+                    val (mostFeltIcon, mostFeltTint) = getMoodIconAndTint(mostFeltMood)
+                    val displayIcon = mostFeltIcon ?: TablerIcons.MoodSmile
+                    val displayTint = if (mostFeltIcon != null) mostFeltTint else Color(0xFFF59E0B)
+                    val displayBg = if (darkTheme) Color(0xFF332A15) else Color(0xFFFEF3C7)
                     val displayMood = if (mostFeltMood == "—") "—" else {
                         mostFeltMood.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
                     }
                     MoodStatCard(
-                        modifier = Modifier.weight(1.2f).testTag("mood_most_felt_card"),
-                        icon = TablerIcons.MoodSmile,
-                        iconTint = Color(0xFFF59E0B),
-                        iconBg = Color(0xFFFEF3C7),
+                        modifier = Modifier.weight(1f).testTag("mood_most_felt_card"),
+                        icon = displayIcon,
+                        iconTint = displayTint,
+                        iconBg = displayBg,
                         label = "Most Felt",
                         value = displayMood,
                         cardBgColor = cardBgColor,
                         cardBorderColor = cardBorderColor,
                         titleTextColor = titleTextColor,
-                        subtextColor = subtextColor
+                        subtextColor = subtextColor,
+                        onClick = {
+                            if (mostFeltMood != "—") {
+                                viewModel.selectMoodFilter(mostFeltMood.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() })
+                            }
+                        }
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -407,10 +418,11 @@ fun MoodStatCard(
     cardBgColor: Color,
     cardBorderColor: Color,
     titleTextColor: Color,
-    subtextColor: Color
+    subtextColor: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Surface(
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
         shape = RoundedCornerShape(20.dp),
         color = cardBgColor,
         border = BorderStroke(1.dp, cardBorderColor)

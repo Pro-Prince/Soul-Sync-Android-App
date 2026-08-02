@@ -221,7 +221,8 @@ fun SuccessState(
                 cardBgColor = cardBgColor,
                 cardBorderColor = cardBorderColor,
                 titleTextColor = titleTextColor,
-                subtextColor = subtextColor
+                subtextColor = subtextColor,
+                onClick = onNavigateToMoods
             )
             MoodStatCard(
                 modifier = Modifier.weight(1f).testTag("home_mood_14d_card"),
@@ -233,10 +234,11 @@ fun SuccessState(
                 cardBgColor = cardBgColor,
                 cardBorderColor = cardBorderColor,
                 titleTextColor = titleTextColor,
-                subtextColor = subtextColor
+                subtextColor = subtextColor,
+                onClick = onNavigateToMoods
             )
             val mostFeltConfig = getExactMoodConfig(data.mostFeltMood)
-            val mostFeltIcon = if (data.mostFeltMood == "—") TablerIcons.Star else mostFeltConfig.icon
+            val mostFeltIcon = if (data.mostFeltMood == "—") TablerIcons.MoodSmile else mostFeltConfig.icon
             val mostFeltTint = if (data.mostFeltMood == "—") Color(0xFFF59E0B) else mostFeltConfig.iconTint
             val mostFeltBg = if (darkTheme) Color(0xFF332A15) else Color(0xFFFEF3C7)
             
@@ -250,7 +252,8 @@ fun SuccessState(
                 cardBgColor = cardBgColor,
                 cardBorderColor = cardBorderColor,
                 titleTextColor = titleTextColor,
-                subtextColor = subtextColor
+                subtextColor = subtextColor,
+                onClick = onNavigateToMoods
             )
         }
         
@@ -335,7 +338,7 @@ fun SuccessState(
         HomeSectionHeader(
             title = "Recent entries",
             actionText = "All >",
-            onActionClick = onNavigateToDiary
+            onActionClick = onNavigateToMoods
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -1022,10 +1025,11 @@ fun MoodStatCard(
     cardBgColor: Color,
     cardBorderColor: Color,
     titleTextColor: Color,
-    subtextColor: Color
+    subtextColor: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Surface(
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
         shape = RoundedCornerShape(20.dp),
         color = cardBgColor,
         border = BorderStroke(1.dp, cardBorderColor)

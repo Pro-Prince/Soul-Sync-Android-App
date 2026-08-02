@@ -330,9 +330,10 @@ fun MainScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight()
-                                    .padding(horizontal = 4.dp, vertical = 8.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                        indication = androidx.compose.material3.ripple()
+                                    ) {
                                         navController.navigate(tab.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
@@ -340,20 +341,27 @@ fun MainScreen(
                                             launchSingleTop = true
                                             restoreState = true
                                         }
-                                    }
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent),
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Icon(
-                                        imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
-                                        contentDescription = tab.title,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else inactiveColor
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
+                                            contentDescription = tab.title,
+                                            modifier = Modifier.size(24.dp),
+                                            tint = if (isSelected) activeColor else inactiveColor
+                                        )
+                                    }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = tab.title,

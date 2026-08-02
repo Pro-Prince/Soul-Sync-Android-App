@@ -102,11 +102,11 @@ fun CycleScreen(
     var currentMonthYear by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 
     val darkTheme = LocalIsDarkTheme.current
-    val bgColor = if (darkTheme) Color(0xFF0F172A) else Color(0xFFFAFAFA)
-    val cardBgColor = if (darkTheme) Color(0xFF1E293B) else Color.White
-    val cardBorderColor = if (darkTheme) Color(0xFF334155) else Color(0xFFF1F5F9)
-    val titleTextColor = if (darkTheme) Color.White else Color(0xFF1E1E1E)
-    val subtextColor = if (darkTheme) Color(0xFF94A3B8) else Color(0xFF71717A)
+    val bgColor = MaterialTheme.colorScheme.background
+    val cardBgColor = MaterialTheme.colorScheme.surface
+    val cardBorderColor = MaterialTheme.colorScheme.outlineVariant
+    val titleTextColor = MaterialTheme.colorScheme.onBackground
+    val subtextColor = MaterialTheme.colorScheme.onSurfaceVariant
     val accentPurple = MaterialTheme.colorScheme.primary
 
     val avgLength = remember(allPeriods) {

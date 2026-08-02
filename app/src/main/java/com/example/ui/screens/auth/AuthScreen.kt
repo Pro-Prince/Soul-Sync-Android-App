@@ -122,7 +122,7 @@ fun AuthScreen(
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Central Form Card
                 Card(
@@ -142,11 +142,11 @@ fun AuthScreen(
                     ) {
                         Text(
                             text = if (isSignUp) "Begin your practice" else "Welcome back",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp),
                             color = textMainCol
                         )
 
-                        Spacer(modifier = Modifier.height(28.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Email Field
                         Text(
@@ -154,7 +154,7 @@ fun AuthScreen(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                             color = textMainCol
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
@@ -175,11 +175,11 @@ fun AuthScreen(
                                 focusedTextColor = textMainCol,
                                 unfocusedTextColor = textMainCol,
                                 focusedBorderColor = brandPurple,
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                unfocusedBorderColor = inputBorderCol,
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         // Password Field
                         Text(
@@ -187,7 +187,7 @@ fun AuthScreen(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                             color = textMainCol
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -212,11 +212,11 @@ fun AuthScreen(
                                 focusedTextColor = textMainCol,
                                 unfocusedTextColor = textMainCol,
                                 focusedBorderColor = brandPurple,
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                unfocusedBorderColor = inputBorderCol,
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Large Brand Pill Button for Sign In / Sign Up
                         Button(
@@ -285,7 +285,7 @@ fun AuthScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(36.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Switch layout link (footer)
                         Box(
@@ -311,7 +311,7 @@ fun AuthScreen(
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         
                         val annotatedText = androidx.compose.ui.text.buildAnnotatedString {
                             append("By continuing you agree to our ")
