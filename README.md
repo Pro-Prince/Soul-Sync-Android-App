@@ -1,6 +1,6 @@
 <div align="center">
 
-# SoulSync — Android
+# Soul Sync — Android
 ### Your personal AI-powered emotional wellness sanctuary.
 
 ![Status](https://img.shields.io/badge/status-live-22C55E?style=flat-square)
@@ -15,7 +15,7 @@
 
 ## Overview
 
-SoulSync Android is a modern AI-powered emotional wellness application that transforms journaling into a deeply personal, supportive, and reflective experience. Instead of being just another digital diary, it combines private journaling, AI emotional reflection, mood tracking, cycle awareness, personal analytics, achievements, and secure cloud synchronization into one calming sanctuary. Built as a true native Android app in Kotlin and Jetpack Compose — not a WebView wrapper — with an offline-first architecture so the app works fully without a connection and syncs the moment one is available.
+Soul Sync Android is a modern AI-powered emotional wellness application that transforms journaling into a deeply personal, supportive, and reflective experience. Instead of being just another digital diary, it combines private journaling, AI emotional reflection, mood tracking, cycle awareness, personal analytics, achievements, and secure cloud synchronization into one calming sanctuary. Built as a true native Android app in Kotlin and Jetpack Compose — not a WebView wrapper — with an offline-first architecture so the app works fully without a connection and syncs the moment one is available.
 
 ---
 
@@ -80,7 +80,7 @@ Raw mood-tracking numbers rarely mean anything to the person looking at them. Bu
 
 ## Web Version
 
-The SoulSync web app is live and fully featured.
+The Soul Sync web app is live and fully featured.
 
 🔗 **[soulsync.lovable.app](https://soulsync.lovable.app)**
 📂 **[Web Repository](https://github.com/Pro-Prince/yoursoulsync)**
