@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_bg">@color/color_bg_dark</color>
+    <color name="color_card">@color/color_card_dark</color>
+    <color name="color_divider">@color/color_divider_dark</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="category_label">#9B9B9B</color>
+    <color name="achievement_card_bg_unlocked">#252525</color>
+    <color name="achievement_card_bg_locked">#2A2A2A</color>
+    <color name="account_avatar_bg">#2A2A2A</color>
+</resources>

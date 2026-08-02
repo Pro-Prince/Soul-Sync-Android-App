@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Soul Sync</string>
+    <string name="settings_title">Settings</string>
+    <string name="appearance_section">Appearance</string>
+    <string name="dark_mode_title">Dark mode</string>
+    <string name="dark_mode_subtitle">Soft on the eyes at night</string>
+    <string name="color_theme_title">Color theme</string>
+    <string name="color_theme_subtitle">Pick a palette that feels like you</string>
+    <string name="theme_soul_pink">Soul Pink</string>
+    <string name="theme_soul_pink_desc">Default · calm and feminine</string>
+    <string name="theme_warm_rose">Warm Rose</string>
+    <string name="theme_warm_rose_desc">Romantic warmth</string>
+    <string name="theme_warm_sand">Warm Sand</string>
+    <string name="theme_warm_sand_desc">Quiet earth tones</string>
+    <string name="theme_lavender_calm">Lavender Calm</string>
+    <string name="theme_lavender_calm_desc">Soothing and dreamy</string>
+    <string name="wellness_section">Wellness</string>
+    <string name="period_tracker_title">Period Tracker</string>
+    <string name="period_tracker_subtitle">Private cycle tab enabled in your nav.</string>
+    <string name="achievements_section">Achievements</string>
+    <string name="account_section">Account</string>
+    <string name="signed_in_subtitle">Signed in</string>
+    <string name="sign_out_title">Sign out</string>
+    <string name="sign_out_dialog_title">Sign out?</string>
+    <string name="sign_out_dialog_msg">You\'ll be taken back to the login screen.</string>
+    <string name="cancel">Cancel</string>
+</resources>

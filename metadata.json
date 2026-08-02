@@ -1,0 +1,6 @@
+{
+  "name": "Soul Sync",
+  "description": "Premium AI-powered emotional journaling and diary app designed for elegant, soft, and healing emotional reflection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
