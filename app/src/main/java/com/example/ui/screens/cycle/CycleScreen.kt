@@ -484,64 +484,80 @@ fun CycleScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        val periodLegendColor = Color(0xFFF43F5E)
-                        val fertileLegendColor = Color(0xFF0EA5E9)
-                        val predictedLegendColor = Color(0xFFFB7185)
+                        val themePrimary = MaterialTheme.colorScheme.primary
 
                         // Legend under the calendar
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Legend 1: Period
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(periodLegendColor)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Period",
-                                fontSize = 12.sp,
-                                color = subtextColor
-                            )
-
-                            Spacer(modifier = Modifier.width(20.dp))
-
-                            // Legend 2: Fertile
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(fertileLegendColor)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Fertile",
-                                fontSize = 12.sp,
-                                color = subtextColor
-                            )
-
-                            Spacer(modifier = Modifier.width(20.dp))
-
-                            // Legend 3: Predicted
-                            Canvas(modifier = Modifier.size(8.dp)) {
-                                drawCircle(
-                                    color = predictedLegendColor,
-                                    style = Stroke(
-                                        width = 1.2.dp.toPx(),
-                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f), 0f)
-                                    )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(themePrimary)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Period",
+                                    fontSize = 11.sp,
+                                    color = subtextColor
                                 )
                             }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Predicted",
-                                fontSize = 12.sp,
-                                color = subtextColor
-                            )
+
+                            // Legend 2: Fertile
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(themePrimary.copy(alpha = if (darkTheme) 0.35f else 0.22f))
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Fertile",
+                                    fontSize = 11.sp,
+                                    color = subtextColor
+                                )
+                            }
+
+                            // Legend 3: Ovulation
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = TablerIcons.Star,
+                                    contentDescription = null,
+                                    tint = themePrimary,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Ovulation",
+                                    fontSize = 11.sp,
+                                    color = subtextColor
+                                )
+                            }
+
+                            // Legend 4: Predicted
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Canvas(modifier = Modifier.size(8.dp)) {
+                                    drawCircle(
+                                        color = themePrimary,
+                                        style = Stroke(
+                                            width = 1.2.dp.toPx(),
+                                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(3f, 3f), 0f)
+                                        )
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Predicted",
+                                    fontSize = 11.sp,
+                                    color = subtextColor
+                                )
+                            }
                         }
                     }
                 }
@@ -933,9 +949,7 @@ fun CalendarGridMock(
     val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
     val formatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-    val periodColor = Color(0xFFF43F5E)
-    val fertileColor = Color(0xFF0EA5E9)
-    val predictedColor = Color(0xFFFB7185)
+    val themePrimary = MaterialTheme.colorScheme.primary
 
     // Compute cycle ranges dynamically for any month
     val effectivePeriods = if (periods.isNotEmpty()) {
@@ -961,6 +975,7 @@ fun CalendarGridMock(
 
     val predictedRanges = mutableListOf<ClosedRange<LocalDate>>()
     val fertileRanges = mutableListOf<ClosedRange<LocalDate>>()
+    val ovulationDates = mutableSetOf<LocalDate>()
 
     for (i in -6..6) {
         val cycleStart = latestStart.plusDays((i * avgLength).toLong())
@@ -972,8 +987,11 @@ fun CalendarGridMock(
         
         val nextCycleStart = cycleStart.plusDays(avgLength.toLong())
         val ovulationDate = nextCycleStart.minusDays(14)
+        ovulationDates.add(ovulationDate)
+
         val fertileStart = ovulationDate.minusDays(5)
-        fertileRanges.add(fertileStart..ovulationDate)
+        val fertileEnd = ovulationDate.plusDays(1)
+        fertileRanges.add(fertileStart..fertileEnd)
     }
 
     Column {
@@ -1016,22 +1034,25 @@ fun CalendarGridMock(
                         
                         val isPeriod = actualPeriodRanges.any { range -> date in range.start..range.endInclusive }
                         val isPredicted = !isPeriod && predictedRanges.any { range -> date in range.start..range.endInclusive }
-                        val isFertile = !isPeriod && !isPredicted && fertileRanges.any { range -> date in range.start..range.endInclusive }
+                        val isOvulation = !isPeriod && !isPredicted && ovulationDates.contains(date)
+                        val isFertile = !isPeriod && !isPredicted && !isOvulation && fertileRanges.any { range -> date in range.start..range.endInclusive }
 
                         val hasLog = logs.any { it.date == dateStr } || (logs.isEmpty() && date == today.minusDays(2))
 
                         val backgroundColor = when {
-                            isPeriod -> periodColor
-                            isFertile -> fertileColor
-                            isPredicted -> predictedColor.copy(alpha = 0.15f)
+                            isPeriod -> themePrimary
+                            isOvulation -> themePrimary.copy(alpha = if (darkTheme) 0.5f else 0.35f)
+                            isFertile -> themePrimary.copy(alpha = if (darkTheme) 0.35f else 0.22f)
+                            isPredicted -> themePrimary.copy(alpha = if (darkTheme) 0.18f else 0.12f)
                             else -> Color.Transparent
                         }
                         
                         val textColor = when {
-                            isPeriod || isFertile -> Color.White
-                            isPredicted -> if (darkTheme) Color(0xFFFDA4AF) else Color(0xFFE11D48)
-                            isSelected -> MaterialTheme.colorScheme.primary
-                            isActualToday -> MaterialTheme.colorScheme.primary
+                            isPeriod -> MaterialTheme.colorScheme.onPrimary
+                            isOvulation || isFertile -> themePrimary
+                            isPredicted -> themePrimary
+                            isSelected -> themePrimary
+                            isActualToday -> themePrimary
                             else -> titleTextColor
                         }
 
@@ -1042,9 +1063,11 @@ fun CalendarGridMock(
                                 .background(backgroundColor)
                                 .then(
                                     if (isSelected) {
-                                        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                                    } else if (isActualToday && !isPeriod && !isFertile) {
-                                        Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), CircleShape)
+                                        Modifier.border(2.dp, themePrimary, CircleShape)
+                                    } else if (isOvulation) {
+                                        Modifier.border(1.5.dp, themePrimary, CircleShape)
+                                    } else if (isActualToday && !isPeriod && !isFertile && !isOvulation) {
+                                        Modifier.border(1.5.dp, themePrimary.copy(alpha = 0.6f), CircleShape)
                                     } else {
                                         Modifier
                                     }
@@ -1055,7 +1078,7 @@ fun CalendarGridMock(
                             if (isPredicted) {
                                 Canvas(modifier = Modifier.matchParentSize()) {
                                     drawCircle(
-                                        color = predictedColor,
+                                        color = themePrimary,
                                         style = Stroke(
                                             width = 1.5.dp.toPx(),
                                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f)
@@ -1068,12 +1091,26 @@ fun CalendarGridMock(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = dayNum.toString(),
-                                    color = textColor,
-                                    fontSize = 14.sp,
-                                    fontWeight = if (isSelected || isActualToday || isPeriod || isFertile) FontWeight.Bold else FontWeight.Medium
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = dayNum.toString(),
+                                        color = textColor,
+                                        fontSize = 13.sp,
+                                        fontWeight = if (isSelected || isActualToday || isPeriod || isFertile || isOvulation) FontWeight.Bold else FontWeight.Medium
+                                    )
+                                    if (isOvulation) {
+                                        Spacer(modifier = Modifier.width(1.dp))
+                                        Icon(
+                                            imageVector = TablerIcons.Star,
+                                            contentDescription = "Ovulation",
+                                            tint = themePrimary,
+                                            modifier = Modifier.size(10.dp)
+                                        )
+                                    }
+                                }
                                 // Dot beneath date if logged
                                 if (hasLog) {
                                     Spacer(modifier = Modifier.height(1.dp))
@@ -1081,7 +1118,7 @@ fun CalendarGridMock(
                                         modifier = Modifier
                                             .size(4.dp)
                                             .clip(CircleShape)
-                                            .background(if (isPeriod || isFertile) Color.White else MaterialTheme.colorScheme.primary)
+                                            .background(if (isPeriod) MaterialTheme.colorScheme.onPrimary else themePrimary)
                                     )
                                 }
                             }
