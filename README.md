@@ -82,7 +82,7 @@ Raw mood-tracking numbers rarely mean anything to the person looking at them. Bu
 
 The Soul Sync web app is live and fully featured.
 
-🔗 **[soulsync.lovable.app](https://soulsync.lovable.app)**
+🔗 **[yoursoulsync.lovable.app](https://yoursoulsync.lovable.app)**
 📂 **[Web Repository](https://github.com/Pro-Prince/yoursoulsync)**
 
 The Android version mirrors the web app's core philosophy with native performance, full offline capability, and platform-specific UX patterns.
