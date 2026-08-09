@@ -91,7 +91,7 @@ The Android version mirrors the web app's core philosophy with native performanc
 
 ## Author
 
-**Prince Patel** — CS Student & Builder
+**Prince Patel** — AI-Powered Product Developer
 
 - 🌐 Portfolio: [prince-patel-portfolio.vercel.app](https://prince-patel-portfolio.vercel.app)
 - 🐙 GitHub: [github.com/Pro-Prince](https://github.com/Pro-Prince)
