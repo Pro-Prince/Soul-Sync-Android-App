@@ -15,30 +15,6 @@
 
 SoulSync Android is the native Android version of SoulSync, rebuilt from scratch in Kotlin and Jetpack Compose — not a WebView wrapper, a true native app with native performance and native UX patterns. We chose an offline-first architecture using Room Database with local AES encryption, meaning the app works completely without internet and syncs when connected. The interface is inspired by Apple Journal and Apple Health, utilizing the Material 3 design language adapted to feel calm, intentional, and distraction-free.
 
-## Development Status
-
-### Completed
-- [x] Project architecture (MVVM + Hilt DI)
-- [x] Room Database setup with encrypted storage
-- [x] Navigation architecture with Jetpack Compose
-- [x] Material 3 theme system
-- [x] Journal entry creation and storage
-- [x] Mood logging screen
-- [x] Settings screen (appearance, themes, wellness toggles, achievements, sign out)
-- [x] Gemini AI integration foundation
-
-### In Progress
-- [ ] Offline-first sync with Supabase
-- [ ] Full analytics and insights screen
-- [ ] Cycle tracking module
-- [ ] WorkManager background sync jobs
-- [ ] Complete AI reflection pipeline
-
-### Planned
-- [ ] Widget support
-- [ ] Biometric lock
-- [ ] Play Store release
-
 ## Features
 
 - **Offline-first journaling** — write entries without internet, data syncs automatically when connection is available
