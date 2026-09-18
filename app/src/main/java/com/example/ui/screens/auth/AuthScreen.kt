@@ -89,30 +89,30 @@ fun AuthScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Brand Logo
                 Image(
                     painter = painterResource(id = R.drawable.logo_transparent),
                     contentDescription = "Soul Sync Brand Logo",
-                    modifier = Modifier.size(96.dp),
+                    modifier = Modifier.size(80.dp),
                     contentScale = ContentScale.Fit
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Soul Sync",
                     style = MaterialTheme.typography.displaySmall.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 34.sp,
+                        fontSize = 32.sp,
                         letterSpacing = (-0.5).sp
                     ),
                     color = textMainCol,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = "A calm, private space to feel, reflect, and grow.",
@@ -122,31 +122,31 @@ fun AuthScreen(
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Central Form Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 32.dp),
-                    shape = RoundedCornerShape(16.dp),
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = cardBg),
-                    border = BorderStroke(1.dp, Color(0xFFF5F5F5)),
+                    border = BorderStroke(1.dp, if (darkTheme) Color(0xFF334155) else Color(0xFFE2E8F0)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp)
+                            .padding(20.dp)
                     ) {
                         Text(
                             text = if (isSignUp) "Begin your practice" else "Welcome back",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 24.sp),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 22.sp),
                             color = textMainCol
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         // Email Field
                         Text(

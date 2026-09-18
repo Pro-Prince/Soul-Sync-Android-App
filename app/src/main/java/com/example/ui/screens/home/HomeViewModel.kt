@@ -79,7 +79,10 @@ class HomeViewModel(
             val monday = LocalDate.now().with(java.time.DayOfWeek.MONDAY).toString()
             val thisWeekCountVal = diaryRepository.getThisWeekCount(monday).firstOrNull() ?: 0
 
-            val sortedEntries = allDiaryEntries.sortedByDescending { it.createdAt }
+            val sortedEntries = allDiaryEntries
+                .distinctBy { it.id }
+                .distinctBy { "${it.date}_${it.title?.trim().orEmpty()}_${it.contentPlain?.trim().orEmpty()}_${it.mood.uppercase()}" }
+                .sortedByDescending { it.createdAt }
             val recentEntriesVal = sortedEntries.take(3)
             val hasEntryTodayVal = sortedEntries.any { it.date == todayStr }
 

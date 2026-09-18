@@ -99,15 +99,20 @@ class NewEntryViewModel(
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
+        // Synchronous guard to immediately reject any multi-click / double-tap
+        if (_isSaving.value || _isAnalyzing.value) {
+            android.util.Log.w("NewEntryViewModel", "Save or analysis already in progress, ignoring subsequent tap")
+            return
+        }
+        if (analyzeWithAI) {
+            _isAnalyzing.value = true
+        } else {
+            _isSaving.value = true
+        }
+
         val mood = _selectedMood.value ?: ""
 
         viewModelScope.launch {
-            if (analyzeWithAI) {
-                _isAnalyzing.value = true
-            } else {
-                _isSaving.value = true
-            }
-
             try {
                 val oldEntry = editingId?.let { diaryRepository.getById(it) }
                 val entryId = editingId ?: UUID.randomUUID().toString()
@@ -160,7 +165,10 @@ class NewEntryViewModel(
                      }
                 }
 
-                diaryRepository.insert(finalEntry)
+                val savedEntry = diaryRepository.insert(finalEntry)
+                editingId = savedEntry.id
+                diaryRepository.cleanUpDuplicates()
+                moodRepository.cleanUpDuplicates()
                 
                 // Get supportive summary after successful save
                 viewModelScope.launch {
@@ -230,7 +238,7 @@ class NewEntryViewModel(
                     } catch(e: Exception) { }
                 }
 
-                onSuccess(finalEntry.id)
+                onSuccess(savedEntry.id)
             } catch (e: Exception) {
                 onError("Failed to save: ${e.message}")
             } finally {

@@ -191,7 +191,10 @@ class MoodsViewModel(
         _selectedMoodFilter,
         _searchQuery
     ) { entries, moodFilter, query ->
-        val sorted = entries.sortedByDescending { it.createdAt }
+        val distinctEntries = entries
+            .distinctBy { it.id }
+            .distinctBy { "${it.date}_${it.title?.trim().orEmpty()}_${it.contentPlain?.trim().orEmpty()}_${it.mood.uppercase()}" }
+        val sorted = distinctEntries.sortedByDescending { it.createdAt }
         sorted.filter { entry ->
             val matchesMood = if (moodFilter.equals("All", ignoreCase = true)) {
                 true

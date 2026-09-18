@@ -102,6 +102,8 @@ class MainActivity : ComponentActivity() {
         val appContainer = (application as SoulSyncApplication).container
         
         lifecycleScope.launch {
+            appContainer.diaryRepository.cleanUpDuplicates()
+            appContainer.moodRepository.cleanUpDuplicates()
             appContainer.achievementRepository.initDefaultAchievements()
             appContainer.notificationPreferencesRepository.updateLastActiveTimestamp(System.currentTimeMillis())
             try {

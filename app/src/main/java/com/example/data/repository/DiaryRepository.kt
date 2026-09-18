@@ -32,19 +32,47 @@ class DiaryRepository(
         return settingsRepository.getUserId() ?: ""
     }
 
-    suspend fun insert(entry: DiaryEntry) = withContext(Dispatchers.IO) {
-        dao.insert(entry)
+    suspend fun cleanUpDuplicates() = withContext(Dispatchers.IO) {
+        try {
+            dao.deleteDuplicates()
+        } catch (e: Exception) {
+            android.util.Log.e("DiaryRepository", "Error cleaning up duplicate entries", e)
+        }
+    }
+
+    suspend fun insert(entry: DiaryEntry): DiaryEntry = withContext(Dispatchers.IO) {
+        // Prevent duplicate creation if identical entry already exists
+        val duplicate = dao.findDuplicate(entry.date, entry.title, entry.contentPlain)
+        val finalEntry = if (duplicate != null && duplicate.id != entry.id) {
+            entry.copy(id = duplicate.id, createdAt = duplicate.createdAt)
+        } else {
+            entry
+        }
+
+        // 1. Authoritative local database save - guarantees instant save and zero data loss
+        dao.insert(finalEntry)
+
+        // 2. Safe background sync to Supabase - network failures will never fail local save
         val userId = getActiveUserId()
         if (userId.isNotBlank()) {
-            SupabaseSyncHelper.syncDiaryEntry(userId, entry)
+            try {
+                SupabaseSyncHelper.syncDiaryEntry(userId, finalEntry)
+            } catch (e: Exception) {
+                android.util.Log.e("DiaryRepository", "Background Supabase sync failed for ${finalEntry.id}", e)
+            }
         }
+        finalEntry
     }
 
     suspend fun delete(entry: DiaryEntry) = withContext(Dispatchers.IO) {
         dao.delete(entry)
         val userId = getActiveUserId()
         if (userId.isNotBlank()) {
-            SupabaseSyncHelper.deleteDiaryEntry(userId, entry.id)
+            try {
+                SupabaseSyncHelper.deleteDiaryEntry(userId, entry.id)
+            } catch (e: Exception) {
+                android.util.Log.e("DiaryRepository", "Background Supabase delete failed for ${entry.id}", e)
+            }
         }
     }
 }

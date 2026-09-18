@@ -430,22 +430,42 @@ fun NewEntryScreen(
     }
 
     val executeSave = { triggerAi: Boolean ->
-        validationErrorMsg = null
-        editText?.let { et ->
-            val spanned = et.text as android.text.Spanned
-            val rawHtml = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                Html.toHtml(spanned, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+        if (isSaving || isAnalyzing) {
+            // Prevent duplicate taps while saving or analyzing
+        } else {
+            validationErrorMsg = null
+            val currentEt = editText
+            val (cleanHtml, cleanPlain) = if (currentEt != null) {
+                val spanned = currentEt.text as? android.text.Spanned
+                val rawHtml = if (spanned != null) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        Html.toHtml(spanned, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        Html.toHtml(spanned)
+                    }
+                } else {
+                    currentEt.text?.toString() ?: ""
+                }
+                val h = rawHtml.trim()
+                val p = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    Html.fromHtml(h, Html.FROM_HTML_MODE_COMPACT).toString().trim()
+                } else {
+                    @Suppress("DEPRECATION")
+                    Html.fromHtml(h).toString().trim()
+                }
+                Pair(h, p)
             } else {
-                @Suppress("DEPRECATION")
-                Html.toHtml(spanned)
+                val h = loadedHtmlContent?.ifBlank { "" } ?: ""
+                val p = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    Html.fromHtml(h, Html.FROM_HTML_MODE_COMPACT).toString().trim()
+                } else {
+                    @Suppress("DEPRECATION")
+                    Html.fromHtml(h).toString().trim()
+                }
+                Pair(h, p)
             }
-            val cleanHtml = rawHtml.trim()
-            val cleanPlain = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                Html.fromHtml(cleanHtml, Html.FROM_HTML_MODE_COMPACT).toString().trim()
-            } else {
-                @Suppress("DEPRECATION")
-                Html.fromHtml(cleanHtml).toString().trim()
-            }
+
             viewModel.saveEntry(cleanHtml, cleanPlain, triggerAi, { savedId ->
                 scope.launch {
                     appContainer.notificationPreferencesRepository.updateUnfinishedDraftPending(false)
@@ -1334,7 +1354,7 @@ fun NewEntryScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp)
-                        .clickable {
+                        .clickable(enabled = !isSaving && !isAnalyzing) {
                             val currentTextLength = editText?.text?.toString()?.trim()?.length ?: contentLength
                             if (selectedMood == null && currentTextLength == 0 && voiceNotePath.isNullOrBlank()) {
                                 validationErrorMsg = "Pick a mood or write something first"
@@ -1348,18 +1368,26 @@ fun NewEntryScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = TablerIcons.FileText,
-                            contentDescription = "Save",
-                            tint = titleTextColor,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = titleTextColor
+                            )
+                        } else {
+                            Icon(
+                                imageVector = TablerIcons.FileText,
+                                contentDescription = "Save",
+                                tint = if (isAnalyzing) titleTextColor.copy(alpha = 0.5f) else titleTextColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = if (isSaving) "Saving..." else "Save",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = titleTextColor
+                            color = if (isAnalyzing) titleTextColor.copy(alpha = 0.5f) else titleTextColor
                         )
                     }
                 }
@@ -1367,11 +1395,11 @@ fun NewEntryScreen(
                 // Analyze with AI Button
                 Surface(
                     shape = RoundedCornerShape(50.dp),
-                    color = primaryPurple,
+                    color = if (isSaving || isAnalyzing) primaryPurple.copy(alpha = 0.6f) else primaryPurple,
                     modifier = Modifier
                         .weight(1.4f)
                         .height(48.dp)
-                        .clickable {
+                        .clickable(enabled = !isSaving && !isAnalyzing) {
                             val currentTextLength = editText?.text?.toString()?.trim()?.length ?: contentLength
                             if (currentTextLength < 5 && voiceNotePath.isNullOrBlank()) {
                                 validationErrorMsg = "Please write a short reflection or record a voice note for AI analysis"
@@ -1385,12 +1413,20 @@ fun NewEntryScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = TablerIcons.Star,
-                            contentDescription = "Analyze",
-                            tint = darkPurpleText,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (isAnalyzing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = darkPurpleText
+                            )
+                        } else {
+                            Icon(
+                                imageVector = TablerIcons.Star,
+                                contentDescription = "Analyze",
+                                tint = darkPurpleText,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = if (isAnalyzing) "Analyzing..." else "Analyze with AI",

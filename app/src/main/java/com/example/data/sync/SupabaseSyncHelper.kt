@@ -301,7 +301,10 @@ object SupabaseSyncHelper {
                         eq("user_id", userId)
                     }
                 }.decodeList<DiaryEntryDto>()
-            for (dto in diaryResult) {
+            val distinctDiaryDtos = diaryResult
+                .distinctBy { it.id }
+                .distinctBy { "${it.date}_${it.title?.trim().orEmpty()}_${it.content_plain.trim()}_${it.mood.uppercase()}" }
+            for (dto in distinctDiaryDtos) {
                 val entry = DiaryEntry(
                     id = dto.id,
                     date = dto.date,
@@ -321,6 +324,7 @@ object SupabaseSyncHelper {
                 )
                 db.diaryEntryDao().insert(entry)
             }
+            db.diaryEntryDao().deleteDuplicates()
 
             val moodResult = SupabaseClient.postgrest.from("mood_logs")
                 .select {
@@ -328,7 +332,10 @@ object SupabaseSyncHelper {
                         eq("user_id", userId)
                     }
                 }.decodeList<MoodLogDto>()
-            for (dto in moodResult) {
+            val distinctMoodDtos = moodResult
+                .distinctBy { it.id }
+                .distinctBy { "${it.date}_${it.mood.uppercase()}" }
+            for (dto in distinctMoodDtos) {
                 val log = MoodLog(
                     id = dto.id,
                     date = dto.date,
@@ -337,6 +344,7 @@ object SupabaseSyncHelper {
                 )
                 db.moodLogDao().insert(log)
             }
+            db.moodLogDao().deleteDuplicates()
 
             val cycleResult = SupabaseClient.postgrest.from("cycle_logs")
                 .select {

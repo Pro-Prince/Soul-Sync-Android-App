@@ -48,4 +48,17 @@ interface DiaryEntryDao {
 
     @Query("SELECT DISTINCT date FROM diary_entries ORDER BY date DESC")
     suspend fun getStreakEntries(): List<String>
+
+    @Query("SELECT * FROM diary_entries WHERE date = :date AND (title = :title OR (:title IS NULL AND title IS NULL)) AND contentPlain = :contentPlain LIMIT 1")
+    suspend fun findDuplicate(date: String, title: String?, contentPlain: String): DiaryEntry?
+
+    @Query("""
+        DELETE FROM diary_entries 
+        WHERE id NOT IN (
+            SELECT MIN(id) 
+            FROM diary_entries 
+            GROUP BY date, mood, contentPlain, COALESCE(title, '')
+        )
+    """)
+    suspend fun deleteDuplicates()
 }

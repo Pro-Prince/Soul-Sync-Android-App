@@ -28,11 +28,23 @@ class MoodRepository(
         return settingsRepository.getUserId() ?: ""
     }
 
+    suspend fun cleanUpDuplicates() = withContext(Dispatchers.IO) {
+        try {
+            dao.deleteDuplicates()
+        } catch (e: Exception) {
+            android.util.Log.e("MoodRepository", "Error cleaning up duplicate mood logs", e)
+        }
+    }
+
     suspend fun insert(log: MoodLog) = withContext(Dispatchers.IO) {
         dao.insert(log)
         val userId = getActiveUserId()
         if (userId.isNotBlank()) {
-            SupabaseSyncHelper.syncMoodLog(userId, log)
+            try {
+                SupabaseSyncHelper.syncMoodLog(userId, log)
+            } catch (e: Exception) {
+                android.util.Log.e("MoodRepository", "Background Supabase mood sync failed for ${log.id}", e)
+            }
         }
     }
 }

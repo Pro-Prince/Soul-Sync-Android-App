@@ -237,15 +237,15 @@ fun SuccessState(
                 subtextColor = subtextColor,
                 onClick = onNavigateToMoods
             )
-            val mostFeltConfig = getExactMoodConfig(data.mostFeltMood)
-            val mostFeltIcon = if (data.mostFeltMood == "—") TablerIcons.MoodSmile else mostFeltConfig.icon
-            val mostFeltTint = if (data.mostFeltMood == "—") Color(0xFFF59E0B) else mostFeltConfig.iconTint
+            val (mostFeltIcon, mostFeltTint) = com.example.ui.screens.moods.getMoodIconAndTint(data.mostFeltMood)
+            val displayIcon = mostFeltIcon ?: TablerIcons.MoodSmile
+            val displayTint = if (mostFeltIcon != null) mostFeltTint else Color(0xFFF59E0B)
             val mostFeltBg = if (darkTheme) Color(0xFF332A15) else Color(0xFFFEF3C7)
             
             MoodStatCard(
                 modifier = Modifier.weight(1f).testTag("home_mood_most_card"),
-                icon = mostFeltIcon,
-                iconTint = mostFeltTint,
+                icon = displayIcon,
+                iconTint = displayTint,
                 iconBg = mostFeltBg,
                 label = "Most felt",
                 value = data.mostFeltMood,

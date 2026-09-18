@@ -20,6 +20,16 @@ interface MoodLogDao {
 
     @Query("SELECT mood, COUNT(*) as count FROM mood_logs WHERE date >= :cutoff GROUP BY mood")
     fun getMoodCountsSince(cutoff: String): Flow<List<MoodCount>>
+
+    @Query("""
+        DELETE FROM mood_logs 
+        WHERE id NOT IN (
+            SELECT MIN(id) 
+            FROM mood_logs 
+            GROUP BY date, mood
+        )
+    """)
+    suspend fun deleteDuplicates()
 }
 
 data class MoodCount(

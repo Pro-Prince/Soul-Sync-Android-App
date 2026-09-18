@@ -24,7 +24,10 @@ class DiaryViewModel(
         .distinctUntilChanged()
 
     val filteredEntries = combine(allEntries, debouncedQuery, _selectedMood) { entries, query, mood ->
-        entries.filter { entry ->
+        val distinctEntries = entries.distinctBy { it.id }.distinctBy { 
+            "${it.date}_${it.title?.trim().orEmpty()}_${it.contentPlain?.trim().orEmpty()}_${it.mood.uppercase()}" 
+        }
+        distinctEntries.filter { entry ->
             val matchesQuery = query.isBlank() || 
                 entry.title?.contains(query, ignoreCase = true) == true ||
                 entry.content.contains(query, ignoreCase = true) ||
