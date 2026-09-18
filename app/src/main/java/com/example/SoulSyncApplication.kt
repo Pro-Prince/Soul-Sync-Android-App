@@ -7,8 +7,14 @@ import com.example.di.DefaultAppContainer
 class SoulSyncApplication : Application() {
     lateinit var container: AppContainer
 
+    companion object {
+        lateinit var instance: SoulSyncApplication
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         
         // Fail-fast verification of BuildConfig values at runtime (except during Robolectric unit tests)
         if (android.os.Build.FINGERPRINT != "robolectric") {

@@ -101,22 +101,46 @@ object SupabaseSyncHelper {
     private const val TAG = "SupabaseSyncHelper"
 
     private suspend fun uploadLocalFileToSupabase(userId: String, localPath: String, bucketName: String = "user-media"): String {
-        if (localPath.startsWith("http://") || localPath.startsWith("https://") || localPath.startsWith("content://")) {
+        if (localPath.startsWith("http://") || localPath.startsWith("https://")) {
             return localPath
         }
-        val file = File(localPath)
-        if (!file.exists()) {
+        val bytes: ByteArray = try {
+            if (localPath.startsWith("content://")) {
+                val uri = android.net.Uri.parse(localPath)
+                com.example.SoulSyncApplication.instance.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return localPath
+            } else {
+                val file = File(localPath)
+                if (!file.exists()) return localPath
+                file.readBytes()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to read local file: $localPath", e)
             return localPath
         }
+
         try {
-            val fileName = "$userId/${file.name}"
+            val extension = when {
+                localPath.contains(".mp4") -> "mp4"
+                localPath.contains(".m4a") -> "m4a"
+                localPath.contains(".3gp") -> "3gp"
+                localPath.contains(".png") -> "png"
+                localPath.contains(".webp") -> "webp"
+                localPath.contains(".jpg") || localPath.contains(".jpeg") -> "jpg"
+                else -> "bin"
+            }
+            val sanitizedName = localPath.hashCode().toString().replace("-", "m")
+            val fileName = "$userId/${System.currentTimeMillis()}_$sanitizedName.$extension"
             val bucket = SupabaseClient.client.storage[bucketName]
             
-            bucket.upload(fileName, file.readBytes(), upsert = true)
+            bucket.upload(fileName, bytes, upsert = true)
             
-            val signedUrl = bucket.createSignedUrl(fileName, expiresIn = 365.days) // 1 year expiry for user viewability
-            Log.d(TAG, "Successfully uploaded media to Supabase storage: $fileName")
-            return signedUrl
+            val remoteUrl = try {
+                bucket.publicUrl(fileName)
+            } catch (e: Exception) {
+                bucket.createSignedUrl(fileName, expiresIn = 365.days)
+            }
+            Log.d(TAG, "Successfully uploaded media to Supabase storage: $fileName -> $remoteUrl")
+            return remoteUrl
         } catch (e: Exception) {
             Log.e(TAG, "Failed to upload file to Supabase storage: $localPath", e)
             return localPath
