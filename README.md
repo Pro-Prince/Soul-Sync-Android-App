@@ -11,9 +11,13 @@
 
 </div>
 
+---
+
 ## Overview
 
 SoulSync Android is the native Android version of SoulSync, rebuilt from scratch in Kotlin and Jetpack Compose — not a WebView wrapper, a true native app with native performance and native UX patterns. We chose an offline-first architecture using Room Database with local AES encryption, meaning the app works completely without internet and syncs when connected. The interface is inspired by Apple Journal and Apple Health, utilizing the Material 3 design language adapted to feel calm, intentional, and distraction-free.
+
+---
 
 ## Features
 
@@ -25,6 +29,8 @@ SoulSync Android is the native Android version of SoulSync, rebuilt from scratch
 - **Theme system** — multiple visual themes including dark mode variants
 - **Achievements** — milestone tracking across journaling and wellness habits
 - **Cycle tracking** — planned for upcoming release
+
+---
 
 ## Tech Stack
 
@@ -43,6 +49,8 @@ SoulSync Android is the native Android version of SoulSync, rebuilt from scratch
 | Material 3 | Design system |
 | Android SDK | Platform |
 
+---
+
 ## Architecture
 
 - MVVM architecture separates UI (Compose screens), business logic (ViewModels), and data (Repository + Room) — each layer communicates through Kotlin Flow streams
@@ -50,6 +58,8 @@ SoulSync Android is the native Android version of SoulSync, rebuilt from scratch
 - Room Database is the single source of truth for all user data — Supabase sync is a secondary layer, not a dependency for core functionality
 - Local AES encryption wraps sensitive journal content before it is written to Room, so even direct database access cannot read plaintext entries
 - WorkManager schedules background sync jobs that run when network is available, ensuring offline entries are uploaded without user intervention
+
+---
 
 ## Challenges Being Solved
 
@@ -65,6 +75,8 @@ SoulSync Android is the native Android version of SoulSync, rebuilt from scratch
 4. **MVVM with Kotlin Coroutines and Flow**
    Reactive data flow from Room through a Repository into a ViewModel and into a Compose screen requires careful lifecycle management to avoid memory leaks and ensure UI state survives configuration changes.
 
+---
+
 ## Web Version
 
 The SoulSync web app is live and fully featured.
@@ -73,6 +85,8 @@ The SoulSync web app is live and fully featured.
 📂 **[Web Repository](https://github.com/Pro-Prince/yoursoulsync)**
 
 The Android version mirrors the web app's core features with native performance, offline capability, and platform-specific UX patterns.
+
+---
 
 ## Local Development
 
