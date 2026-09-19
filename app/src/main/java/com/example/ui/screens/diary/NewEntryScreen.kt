@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -256,12 +257,26 @@ fun NewEntryScreen(
                     delay(80)
                 }
                 isUploadingMedia = false
-                try {
-                    context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                } catch (e: Exception) {}
+                
+                val savedFile = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                    try {
+                        val mime = context.contentResolver.getType(uri) ?: "image/jpeg"
+                        val ext = if (mime.contains("png")) "png" else if (mime.contains("webp")) "webp" else "jpg"
+                        val mediaDir = File(context.filesDir, "media").apply { if (!exists()) mkdirs() }
+                        val file = File(mediaDir, "img_${System.currentTimeMillis()}_${(1000..9999).random()}.$ext")
+                        context.contentResolver.openInputStream(uri)?.use { input ->
+                            file.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        if (file.exists() && file.length() > 0) file.absolutePath else uri.toString()
+                    } catch (e: Exception) {
+                        uri.toString()
+                    }
+                }
                 
                 val currentImages = attachedImageUri ?: ""
-                val newImages = if (currentImages.isBlank()) uri.toString() else "$currentImages,${uri.toString()}"
+                val newImages = if (currentImages.isBlank()) savedFile else "$currentImages,$savedFile"
                 viewModel.setAttachedImage(newImages)
                 isDirty = true
             }
@@ -306,10 +321,21 @@ fun NewEntryScreen(
                 }
 
                 if (isValid) {
-                    try {
-                        context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    } catch (e: Exception) {}
-                    viewModel.setVideoPath(uri.toString())
+                    val savedVideoPath = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                        try {
+                            val mediaDir = File(context.filesDir, "media").apply { if (!exists()) mkdirs() }
+                            val file = File(mediaDir, "vid_${System.currentTimeMillis()}.mp4")
+                            context.contentResolver.openInputStream(uri)?.use { input ->
+                                file.outputStream().use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+                            if (file.exists() && file.length() > 0) file.absolutePath else uri.toString()
+                        } catch (e: Exception) {
+                            uri.toString()
+                        }
+                    }
+                    viewModel.setVideoPath(savedVideoPath)
                     isDirty = true
                 }
             }

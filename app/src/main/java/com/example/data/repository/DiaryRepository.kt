@@ -5,14 +5,17 @@ import com.example.data.local.dao.DiaryEntryDao
 import com.example.data.local.entity.DiaryEntry
 import com.example.data.sync.SupabaseSyncHelper
 import com.example.data.supabase.SupabaseClient
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DiaryRepository(
     private val dao: DiaryEntryDao,
     private val settingsRepository: SettingsRepository
 ) {
+    private val syncScope = CoroutineScope(Dispatchers.IO)
     fun getAll() = dao.getAllOrderedByDate()
     fun getByDateRange(start: String, end: String) = dao.getByDateRange(start, end)
     fun getThisWeekCount(weekStart: String) = dao.getThisWeekCount(weekStart)
@@ -52,13 +55,15 @@ class DiaryRepository(
         // 1. Authoritative local database save - guarantees instant save and zero data loss
         dao.insert(finalEntry)
 
-        // 2. Safe background sync to Supabase - network failures will never fail local save
-        val userId = getActiveUserId()
-        if (userId.isNotBlank()) {
-            try {
-                SupabaseSyncHelper.syncDiaryEntry(userId, finalEntry)
-            } catch (e: Exception) {
-                android.util.Log.e("DiaryRepository", "Background Supabase sync failed for ${finalEntry.id}", e)
+        // 2. Safe non-blocking background sync to Supabase - network/cloud never blocks local save or UI
+        syncScope.launch {
+            val userId = getActiveUserId()
+            if (userId.isNotBlank()) {
+                try {
+                    SupabaseSyncHelper.syncDiaryEntry(userId, finalEntry)
+                } catch (e: Exception) {
+                    android.util.Log.e("DiaryRepository", "Background Supabase sync failed for ${finalEntry.id}", e)
+                }
             }
         }
         finalEntry
@@ -66,12 +71,14 @@ class DiaryRepository(
 
     suspend fun delete(entry: DiaryEntry) = withContext(Dispatchers.IO) {
         dao.delete(entry)
-        val userId = getActiveUserId()
-        if (userId.isNotBlank()) {
-            try {
-                SupabaseSyncHelper.deleteDiaryEntry(userId, entry.id)
-            } catch (e: Exception) {
-                android.util.Log.e("DiaryRepository", "Background Supabase delete failed for ${entry.id}", e)
+        syncScope.launch {
+            val userId = getActiveUserId()
+            if (userId.isNotBlank()) {
+                try {
+                    SupabaseSyncHelper.deleteDiaryEntry(userId, entry.id)
+                } catch (e: Exception) {
+                    android.util.Log.e("DiaryRepository", "Background Supabase delete failed for ${entry.id}", e)
+                }
             }
         }
     }

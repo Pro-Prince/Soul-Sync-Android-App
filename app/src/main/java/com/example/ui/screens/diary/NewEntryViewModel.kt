@@ -92,6 +92,22 @@ class NewEntryViewModel(
         }
     }
 
+    fun resetState() {
+        editingId = null
+        _selectedDate.value = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+        _selectedMood.value = null
+        _title.value = ""
+        _contentLength.value = 0
+        _voiceNotePath.value = null
+        _attachedImageUri.value = null
+        _videoPath.value = null
+        _stickerUsed.value = false
+        _isSaving.value = false
+        _isAnalyzing.value = false
+        _reflectiveSummary.value = null
+        _loadedHtmlContent.value = null
+    }
+
     fun saveEntry(
         htmlContent: String, 
         plainTextContent: String, 
@@ -137,13 +153,24 @@ class NewEntryViewModel(
                 // If analyze with AI, call Gemini first before saving to DB
                 val finalEntry = if (analyzeWithAI) {
                      try {
-                         val result = GeminiApiService.analyzeEntry(plainTextContent, mood)
-                         entry.copy(
-                             aiSummary = result.summary.ifBlank { "You expressed your thoughts for today with clarity." },
-                             aiPattern = result.pattern.ifBlank { "Journaling regularly builds emotional self-awareness." },
-                             aiNextStep = result.nextStep.ifBlank { "Take a moment to relax and celebrate taking time for yourself." },
-                             hashtags = result.hashtags?.joinToString(",")?.ifBlank { "reflection,mindfulness,journal" } ?: "reflection,mindfulness,journal"
-                         )
+                         val result = kotlinx.coroutines.withTimeoutOrNull(8000L) {
+                             GeminiApiService.analyzeEntry(plainTextContent, mood)
+                         }
+                         if (result != null) {
+                             entry.copy(
+                                 aiSummary = result.summary.ifBlank { "You expressed your thoughts for today with clarity." },
+                                 aiPattern = result.pattern.ifBlank { "Journaling regularly builds emotional self-awareness." },
+                                 aiNextStep = result.nextStep.ifBlank { "Take a moment to relax and celebrate taking time for yourself." },
+                                 hashtags = result.hashtags?.joinToString(",")?.ifBlank { "reflection,mindfulness,journal" } ?: "reflection,mindfulness,journal"
+                             )
+                         } else {
+                             val moodLabel = if (mood.isNotBlank()) mood.lowercase() else "thoughtful"
+                             val defaultSummary = "Reflecting on your entry: You took time to express your feelings while feeling $moodLabel. Writing down thoughts helps create emotional balance and space."
+                             val defaultPattern = "Consistent reflection helps you spot patterns in your daily thoughts and energy."
+                             val defaultStep = "Take three deep breaths and give yourself credit for showing up today."
+                             val defaultTags = "reflection,mindfulness,journal"
+                             entry.copy(aiSummary = defaultSummary, aiPattern = defaultPattern, aiNextStep = defaultStep, hashtags = defaultTags)
+                         }
                      } catch (e: Exception) {
                          val moodLabel = if (mood.isNotBlank()) mood.lowercase() else "thoughtful"
                          val defaultSummary = "Reflecting on your entry: You took time to express your feelings while feeling $moodLabel. Writing down thoughts helps create emotional balance and space."
@@ -238,12 +265,13 @@ class NewEntryViewModel(
                     } catch(e: Exception) { }
                 }
 
-                onSuccess(savedEntry.id)
-            } catch (e: Exception) {
-                onError("Failed to save: ${e.message}")
-            } finally {
                 _isSaving.value = false
                 _isAnalyzing.value = false
+                onSuccess(savedEntry.id)
+            } catch (e: Exception) {
+                _isSaving.value = false
+                _isAnalyzing.value = false
+                onError("Failed to save: ${e.message}")
             }
         }
     }

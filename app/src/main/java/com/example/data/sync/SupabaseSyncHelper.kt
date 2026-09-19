@@ -118,15 +118,37 @@ object SupabaseSyncHelper {
             return localPath
         }
 
+        if (bytes.isEmpty()) return localPath
+
         try {
             val extension = when {
-                localPath.contains(".mp4") -> "mp4"
-                localPath.contains(".m4a") -> "m4a"
-                localPath.contains(".3gp") -> "3gp"
-                localPath.contains(".png") -> "png"
-                localPath.contains(".webp") -> "webp"
-                localPath.contains(".jpg") || localPath.contains(".jpeg") -> "jpg"
-                else -> "bin"
+                localPath.contains(".mp4", ignoreCase = true) -> "mp4"
+                localPath.contains(".m4a", ignoreCase = true) -> "m4a"
+                localPath.contains(".3gp", ignoreCase = true) -> "3gp"
+                localPath.contains(".png", ignoreCase = true) -> "png"
+                localPath.contains(".webp", ignoreCase = true) -> "webp"
+                localPath.contains(".jpg", ignoreCase = true) || localPath.contains(".jpeg", ignoreCase = true) -> "jpg"
+                localPath.startsWith("content://") -> {
+                    val mime = try {
+                        val uri = android.net.Uri.parse(localPath)
+                        com.example.SoulSyncApplication.instance.contentResolver.getType(uri) ?: ""
+                    } catch (e: Exception) { "" }
+                    when {
+                        mime.contains("jpeg") || mime.contains("jpg") -> "jpg"
+                        mime.contains("png") -> "png"
+                        mime.contains("webp") -> "webp"
+                        mime.contains("mp4") -> "mp4"
+                        mime.contains("3gp") -> "3gp"
+                        mime.contains("audio") -> "m4a"
+                        else -> "jpg"
+                    }
+                }
+                // Magic bytes detection fallback
+                bytes.size >= 3 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte() -> "jpg"
+                bytes.size >= 4 && bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte() -> "png"
+                bytes.size >= 4 && bytes[0] == 0x52.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() && bytes[3] == 0x46.toByte() -> "webp"
+                bytes.size >= 8 && bytes[4] == 0x66.toByte() && bytes[5] == 0x74.toByte() && bytes[6] == 0x79.toByte() && bytes[7] == 0x70.toByte() -> "mp4"
+                else -> "jpg"
             }
             val sanitizedName = localPath.hashCode().toString().replace("-", "m")
             val fileName = "$userId/${System.currentTimeMillis()}_$sanitizedName.$extension"
@@ -137,7 +159,11 @@ object SupabaseSyncHelper {
             val remoteUrl = try {
                 bucket.publicUrl(fileName)
             } catch (e: Exception) {
-                bucket.createSignedUrl(fileName, expiresIn = 365.days)
+                try {
+                    bucket.createSignedUrl(fileName, expiresIn = 365.days)
+                } catch (e2: Exception) {
+                    "${com.example.BuildConfig.SUPABASE_URL}/storage/v1/object/public/$bucketName/$fileName"
+                }
             }
             Log.d(TAG, "Successfully uploaded media to Supabase storage: $fileName -> $remoteUrl")
             return remoteUrl
