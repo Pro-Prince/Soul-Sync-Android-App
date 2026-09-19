@@ -265,17 +265,13 @@ CREATE POLICY "project_heartbeat_all" ON public.project_heartbeat
     WITH CHECK (true);
 
 -- ----------------------------------------------------------------------------
--- 6. STORAGE: BUCKET CONFIGURATION & FULL MEDIA ACCESS POLICIES
+-- 6. STORAGE: BUCKET CONFIGURATION & FULL MEDIA ACCESS POLICIES (IMAGES, VIDEOS, AUDIO)
 -- ----------------------------------------------------------------------------
--- 104857600 bytes = 100 MB limit (accommodates high-res photos and video diaries)
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('user-media', 'user-media', true, 104857600, NULL)
-ON CONFLICT (id) DO UPDATE SET 
-    public = true,
-    file_size_limit = 104857600,
-    allowed_mime_types = NULL;
+-- Ensure storage extension and permissions are granted
+GRANT ALL ON TABLE storage.objects TO anon, authenticated, service_role;
+GRANT ALL ON TABLE storage.buckets TO anon, authenticated, service_role;
 
--- Drop old storage policies
+-- Drop all possible previous policies on storage.objects
 DROP POLICY IF EXISTS "storage_select_policy" ON storage.objects;
 DROP POLICY IF EXISTS "storage_insert_policy" ON storage.objects;
 DROP POLICY IF EXISTS "storage_update_policy" ON storage.objects;
@@ -284,23 +280,41 @@ DROP POLICY IF EXISTS "user_media_select_policy" ON storage.objects;
 DROP POLICY IF EXISTS "user_media_insert_policy" ON storage.objects;
 DROP POLICY IF EXISTS "user_media_update_policy" ON storage.objects;
 DROP POLICY IF EXISTS "user_media_delete_policy" ON storage.objects;
+DROP POLICY IF EXISTS "user_media_select" ON storage.objects;
+DROP POLICY IF EXISTS "user_media_insert" ON storage.objects;
+DROP POLICY IF EXISTS "user_media_update" ON storage.objects;
+DROP POLICY IF EXISTS "user_media_delete" ON storage.objects;
+DROP POLICY IF EXISTS "user_media_all_policy" ON storage.objects;
+DROP POLICY IF EXISTS "Allow user-media read" ON storage.objects;
+DROP POLICY IF EXISTS "Allow user-media insert" ON storage.objects;
+DROP POLICY IF EXISTS "Allow user-media update" ON storage.objects;
+DROP POLICY IF EXISTS "Allow user-media delete" ON storage.objects;
 
--- Robust storage policies allowing upload, read, update/upsert, and delete
-CREATE POLICY "user_media_select_policy" ON storage.objects
-    FOR SELECT TO public
+-- 104857600 bytes = 100 MB limit (accommodates high-res photos, videos, and voice notes)
+-- Setting allowed_mime_types = NULL allows ANY file type (jpg, png, webp, mp4, m4a, etc.)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('user-media', 'user-media', true, 104857600, NULL)
+ON CONFLICT (id) DO UPDATE SET 
+    public = true,
+    file_size_limit = 104857600,
+    allowed_mime_types = NULL;
+
+-- Comprehensive storage policies allowing upload, read, update, and delete for app users
+CREATE POLICY "user_media_select" ON storage.objects
+    FOR SELECT TO anon, authenticated, service_role
     USING (bucket_id = 'user-media');
 
-CREATE POLICY "user_media_insert_policy" ON storage.objects
-    FOR INSERT TO public
+CREATE POLICY "user_media_insert" ON storage.objects
+    FOR INSERT TO anon, authenticated, service_role
     WITH CHECK (bucket_id = 'user-media');
 
-CREATE POLICY "user_media_update_policy" ON storage.objects
-    FOR UPDATE TO public
+CREATE POLICY "user_media_update" ON storage.objects
+    FOR UPDATE TO anon, authenticated, service_role
     USING (bucket_id = 'user-media')
     WITH CHECK (bucket_id = 'user-media');
 
-CREATE POLICY "user_media_delete_policy" ON storage.objects
-    FOR DELETE TO public
+CREATE POLICY "user_media_delete" ON storage.objects
+    FOR DELETE TO anon, authenticated, service_role
     USING (bucket_id = 'user-media');
 
 -- ----------------------------------------------------------------------------
